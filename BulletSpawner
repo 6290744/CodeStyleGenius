@@ -1,0 +1,51 @@
+using System.Collections;
+using UnityEngine;
+
+public class BulletSpawner : MonoBehaviour
+{
+    [SerializeField] private Bullet _prefab;
+    [SerializeField] private Transform _target;
+    [SerializeField] private float _bulletSpeed;
+    [SerializeField] private float _shootCooldown;
+
+    private bool _isShooting;
+    
+    private void Start()
+    {
+        if (_prefab != null)
+        {
+            _isShooting = true;
+        
+            StartCoroutine(ShootingLoop());
+        }
+    }
+
+    private IEnumerator ShootingLoop()
+    {
+        WaitForSeconds waitForSeconds = new WaitForSeconds(_shootCooldown);
+        
+        while (_isShooting)
+        {
+            Bullet bullet = Instantiate(_prefab, transform.position, Quaternion.identity);
+            
+            SetDirectionFor(bullet);
+            
+            SetVelocityFor(bullet);
+
+            yield return waitForSeconds;
+        }
+    }
+
+    private void SetDirectionFor(Bullet bullet)
+    {
+        bullet.transform.rotation = Quaternion.LookRotation(_target.position - bullet.transform.position);
+    }
+
+    private void SetVelocityFor(Bullet bullet)
+    {
+        if (bullet.gameObject.TryGetComponent(out Rigidbody rigidbody))
+        {
+            rigidbody.linearVelocity = Vector3.forward * _bulletSpeed;
+        }
+    }
+}
