@@ -9,7 +9,7 @@ public class MoverByWaypoints : MonoBehaviour
     private bool _isMoving;
     private int _currentWaypointIndex = 0;
     private Vector3 _currentWaypointPosition;
-    private Transform[] _wayPoints;
+    private Transform[] _waypoints;
 
     private void Awake()
     {
@@ -17,18 +17,18 @@ public class MoverByWaypoints : MonoBehaviour
 
         if (_waypointsCount > 0)
         {
-            _wayPoints = new Transform[_waypointsCount];
+            _waypoints = new Transform[_waypointsCount];
 
             for (int i = 0; i < _waypointsCount; i++)
             {
-                _wayPoints[i] = _waypointsContainer.GetChild(i);
+                _waypoints[i] = _waypointsContainer.GetChild(i);
             }
         }
     }
 
     private void OnEnable()
     {
-        if (_wayPoints.Length > 0)
+        if (_waypoints.Length > 0)
         {
             _isMoving = true;
         }
@@ -75,11 +75,11 @@ public class MoverByWaypoints : MonoBehaviour
     
     private int GetNextWaypointIndex()
     {
-        return (_currentWaypointIndex + 1) % _wayPoints.Length;
+        return (_currentWaypointIndex + 1) % _waypoints.Length;
     }
 
     private Vector3 GetNextWaypointPosition()
     {
-        return _wayPoints[_currentWaypointIndex].position;
+        return _waypoints[_currentWaypointIndex].position;
     }
 }
