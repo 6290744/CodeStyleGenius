@@ -5,7 +5,6 @@ public class BulletSpawner : MonoBehaviour
 {
     [SerializeField] private Bullet _prefab;
     [SerializeField] private Transform _target;
-    [SerializeField] private float _bulletSpeed;
     [SerializeField] private float _shootCooldown;
 
     private bool _isShooting;
@@ -16,36 +15,20 @@ public class BulletSpawner : MonoBehaviour
         {
             _isShooting = true;
         
-            StartCoroutine(ShootingLoop());
+            StartCoroutine(Shoot());
         }
     }
 
-    private IEnumerator ShootingLoop()
+    private IEnumerator Shoot()
     {
         WaitForSeconds waitForSeconds = new WaitForSeconds(_shootCooldown);
         
         while (_isShooting)
         {
             Bullet bullet = Instantiate(_prefab, transform.position, Quaternion.identity);
-            
-            SetDirectionFor(bullet);
-            
-            SetVelocityFor(bullet);
+            bullet.Attack(_target.position);
 
             yield return waitForSeconds;
         }
     }
-
-    private void SetDirectionFor(Bullet bullet)
-    {
-        bullet.transform.rotation = Quaternion.LookRotation(_target.position - bullet.transform.position);
-    }
-
-    private void SetVelocityFor(Bullet bullet)
-    {
-        if (bullet.gameObject.TryGetComponent(out Rigidbody rigidbody))
-        {
-            rigidbody.linearVelocity = Vector3.forward * _bulletSpeed;
-        }
-    }
-}
+} 
