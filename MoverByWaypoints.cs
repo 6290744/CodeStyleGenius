@@ -1,76 +1,85 @@
 using UnityEngine;
-using System.Collections;
 
 public class MoverByWaypoints : MonoBehaviour
 {
-    [SerializeField] private Transform[] _wayPoints;
+    [SerializeField] private Transform _waypointsContainer;
     [SerializeField] private float _speed = 3;
     [SerializeField] private float _minimalDistanceForChangeWaypoint = 0.05f;
 
     private bool _isMoving;
-    private int _currentWaypointIndex;
+    private int _currentWaypointIndex = 0;
     private Vector3 _currentWaypointPosition;
-    
+    private Transform[] _wayPoints;
+
+    private void Awake()
+    {
+        int _waypointsCount = transform.childCount;
+
+        if (_waypointsCount > 0)
+        {
+            _wayPoints = new Transform[_waypointsCount];
+
+            for (int i = 0; i < _waypointsCount; i++)
+            {
+                _wayPoints[i] = _waypointsContainer.GetChild(i);
+            }
+        }
+    }
+
     private void OnEnable()
     {
         if (_wayPoints.Length > 0)
         {
-            _currentWaypointIndex = GetStartWaypointIndex();
-
-            _currentWaypointPosition = GetCurrentWaypointPosition();
-        
             _isMoving = true;
-
-            StartCoroutine(Moveloop());
         }
     }
-    
-    private IEnumerator Moveloop()
-    {
-        WaitForEndOfFrame waitForEndOfFrame = new WaitForEndOfFrame();
 
+    private void OnDisable()
+    {
+        _isMoving = false;
+    }
+
+    private void Update()
+    {
         while (_isMoving)
         {
-            Move();
+            MoveForward();
 
             if (IsWaypointReached())
             {
                 ChangeWaypoint();
             }
-
-            yield return waitForEndOfFrame;
         }
     }
-    
-    private int GetStartWaypointIndex()
-    {
-        return Random.Range(0, _wayPoints.Length);
-    }
 
-    private int GetCurrentWaypointIndex()
+    private void MoveForward()
+    {
+        transform.rotation = Quaternion.LookRotation(_currentWaypointPosition - transform.position);
+        transform.position = Vector3.MoveTowards(transform.position, _currentWaypointPosition, _speed * Time.deltaTime);
+    }
+    
+    private bool IsWaypointReached()
+    {
+        Vector3 delta = _currentWaypointPosition - transform.position;
+        float squaredDelta = delta.sqrMagnitude;
+        
+        return squaredDelta < _minimalDistanceForChangeWaypoint * _minimalDistanceForChangeWaypoint;
+    }
+    
+    private void ChangeWaypoint()
+    {
+        _currentWaypointIndex = GetNextWaypointIndex();
+
+        _currentWaypointPosition = GetNextWaypointPosition();
+    }
+    
+    private int GetNextWaypointIndex()
     {
         return (_currentWaypointIndex + 1) % _wayPoints.Length;
     }
 
-    private Vector3 GetCurrentWaypointPosition()
+    private Vector3 GetNextWaypointPosition()
     {
         return _wayPoints[_currentWaypointIndex].position;
-    }
-    
-    private void Move()
-    {
-        transform.position = Vector3.MoveTowards(transform.position, _currentWaypointPosition, _speed * Time.deltaTime);
-    }
-
-    private bool IsWaypointReached()
-    {
-        return Vector3.Distance(transform.position, _currentWaypointPosition) <= _minimalDistanceForChangeWaypoint;
-    }
-
-    private void ChangeWaypoint()
-    {
-        _currentWaypointIndex = GetCurrentWaypointIndex();
-
-        _currentWaypointPosition = GetCurrentWaypointPosition();
     }
 }
